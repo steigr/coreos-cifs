@@ -1,0 +1,20 @@
+#cloud-config
+coreos:
+  units:
+  - name: install-mount.cifs.service
+    runtime: yes
+    command: start
+    content: |
+      [Unit]
+      Requires=local-fs.target network-online.target
+      After=local-fs.target network-online.target
+      ConditionPathIsReadWrite=/usr/share/oem
+      ConditionPathIsExists=!/usr/share/oem/cifs/bin/mount.cifs
+      [Install]
+      WantedBy=basic.target
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      EnvironmentFile=/usr/share/coreos/lsb-release
+      Environment=URL=https://github.com/steigr/coreos-cifs/releases/download/${DISTRIB_RELEASE}/mount.cifs.tar.xz
+      ExecStart=/usr/bin/env bash -lxc 'curl -sL ${URL} | tar -J -x -o -m -C /'
